@@ -1,4 +1,4 @@
-package tcpassos.pipeline;
+package com.github.tcpassos.pipeline;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -47,7 +47,6 @@ public interface UnaryPipeline <T> extends OptionalPipeline <T,T> {
     /**
      * Connect this pipeline at the beginning of another pipeline
      *
-     * @param <T> Pipeline output element type
      * @param nextPipe Pipeline to be connected at the end of this pipeline
      * @return {@code UnaryPipeline<T>}
      */
@@ -64,7 +63,6 @@ public interface UnaryPipeline <T> extends OptionalPipeline <T,T> {
     /**
      * Connect this pipeline at the beginning of another pipeline without checking if the output element is present
      *
-     * @param <T> Pipeline output element type
      * @param nextPipe Pipeline to be connected at the end of this pipeline
      * @return {@code UnaryPipeline<T>}
      */

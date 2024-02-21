@@ -1,4 +1,4 @@
-package tcpassos.pipeline;
+package com.github.tcpassos.pipeline;
 
 import java.util.Collection;
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.stream.StreamSupport;
 
 /**
  * Processing pipeline using generics that returns an {@link Optional} with the output element or a
- * {@link Optional.empty} if the pipeline is interrupted before reaching the end.
+ * {@code Optional.empty()} if the pipeline is interrupted before reaching the end.
  *
  * @param <BEGIN> Pipeline input element type
  * @param <END> Pipeline output element type

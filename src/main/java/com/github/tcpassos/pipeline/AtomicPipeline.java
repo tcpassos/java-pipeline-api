@@ -1,4 +1,4 @@
-package tcpassos.pipeline;
+package com.github.tcpassos.pipeline;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -14,10 +14,18 @@ public class AtomicPipeline<BEGIN, END> implements Pipeline<BEGIN, END> {
     /* Reference to the pipeline that will be executed. */
     private final AtomicReference<OptionalPipeline<? super BEGIN, END>> pipelineReference;
 
+    /**
+     * Creates a new atomic pipeline with an empty pipeline.
+     */
     public AtomicPipeline() {
         this.pipelineReference = new AtomicReference<>(obj -> Optional.empty());
     }
 
+    /**
+     * Creates a new atomic pipeline with the given pipeline.
+     *
+     * @param pipeline The pipeline to be executed.
+     */
     public AtomicPipeline(OptionalPipeline<? super BEGIN, END> pipeline) {
         this.pipelineReference = new AtomicReference<>(pipeline);
     }

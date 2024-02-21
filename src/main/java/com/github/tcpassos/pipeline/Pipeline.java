@@ -1,4 +1,4 @@
-package tcpassos.pipeline;
+package com.github.tcpassos.pipeline;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -14,7 +14,7 @@ import java.util.function.Supplier;
  *
  * <p>
  * The method of this functional interface will return a {@link Optional} with the output element or a
- * {@link Optional.empty} if the pipeline is interrupted before reaching the end.
+ * {@code Optional.empty()} if the pipeline is interrupted before reaching the end.
  * </p>
  */
 public interface Pipeline <BEGIN, END> extends OptionalPipeline <BEGIN,END> {
@@ -72,7 +72,7 @@ public interface Pipeline <BEGIN, END> extends OptionalPipeline <BEGIN,END> {
     /**
      * Connect this pipeline at the beginning of another pipeline without checking if the output element is present
      *
-     * @param <T> Pipeline output element type
+     * @param <NEW_END> New pipeline output element type
      * @param nextPipe Pipeline to be connected at the end of this pipeline
      * @return {@code UnaryPipeline<T>}
      */

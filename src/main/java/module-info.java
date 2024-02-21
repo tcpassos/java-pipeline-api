@@ -1,3 +1,3 @@
-module pipeline.api {
-    exports tcpassos.pipeline;
+module pipeline {
+    exports com.github.tcpassos.pipeline;
 }
