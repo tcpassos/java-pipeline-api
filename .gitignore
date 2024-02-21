@@ -25,3 +25,6 @@ replay_pid*
 
 # Binary Files
 target/
+
+# VSCode
+.vscode/
