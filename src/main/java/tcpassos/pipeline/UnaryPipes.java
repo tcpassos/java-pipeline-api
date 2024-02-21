@@ -2,9 +2,9 @@ package tcpassos.pipeline;
 
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
 
 /**
  * A collection of single-step pipelines.
@@ -82,7 +82,7 @@ public class UnaryPipes {
      * @param mapper Function that will transform the input element
      * @return {@code UnaryPipeline<T>}
      */
-    public static <T> UnaryPipeline<T> mapping(UnaryOperator<T> mapper) {
+    public static <T> UnaryPipeline<T> mapping(Function<T,T> mapper) {
         return (obj) -> Optional.of(mapper.apply(obj));
     }
     
