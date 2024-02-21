@@ -18,7 +18,7 @@ public class UnaryPipes {
      * @param value Value to be returned as output element
      * @return {@code UnaryPipeline<T>}
      */
-    static <T> UnaryPipeline<T> giving(T value) {
+    public static <T> UnaryPipeline<T> giving(T value) {
         return (obj) -> Optional.of(value);
     }
 
@@ -29,7 +29,7 @@ public class UnaryPipes {
      * @param supplier Supplier that will provide the output element
      * @return {@code UnaryPipeline<T>}
      */
-    static <T> UnaryPipeline<T> giving(Supplier<T> supplier) {
+    public static <T> UnaryPipeline<T> giving(Supplier<T> supplier) {
         return (obj) -> Optional.of(supplier.get());
     }
 
@@ -41,7 +41,7 @@ public class UnaryPipes {
      * @param processor Consumer that will process the input element
      * @return {@code UnaryPipeline<T>}
      */
-    static <T> UnaryPipeline<T> processing(Consumer<T> processor) {
+    public static <T> UnaryPipeline<T> processing(Consumer<T> processor) {
         return (obj) -> {
             processor.accept(obj);
             return Optional.of(obj);
@@ -55,7 +55,7 @@ public class UnaryPipes {
      * @param runnable Runnable to be executed
      * @return {@code UnaryPipeline<T>}
      */
-    static <T> UnaryPipeline<T> running(Runnable runnable) {
+    public static <T> UnaryPipeline<T> running(Runnable runnable) {
         return (obj) -> {
             runnable.run();
             return Optional.of(obj);
@@ -70,7 +70,7 @@ public class UnaryPipes {
      * @param filter Predicate that will filter the element processed by the pipeline
      * @return {@code UnaryPipeline<T>}
      */
-    static <T> UnaryPipeline<T> filtering(Predicate<T> filter) {
+    public static <T> UnaryPipeline<T> filtering(Predicate<T> filter) {
         return (obj) -> filter.test(obj) ? Optional.of(obj) : Optional.empty();
     }
 
@@ -82,7 +82,7 @@ public class UnaryPipes {
      * @param mapper Function that will transform the input element
      * @return {@code UnaryPipeline<T>}
      */
-    static <T> UnaryPipeline<T> mapping(UnaryOperator<T> mapper) {
+    public static <T> UnaryPipeline<T> mapping(UnaryOperator<T> mapper) {
         return (obj) -> Optional.of(mapper.apply(obj));
     }
     

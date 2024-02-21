@@ -18,7 +18,7 @@ public class Pipes {
      * @param value Value to be returned by the pipeline
      * @return {@code Pipeline<T, T>}
      */
-    static <T> Pipeline<T, T> giving(T value) {
+    public static <T> Pipeline<T, T> giving(T value) {
         return (obj) -> Optional.of(value);
     }
 
@@ -29,7 +29,7 @@ public class Pipes {
      * @param supplier Supplier that will provide the output element
      * @return {@code Pipeline<T, T>}
      */
-    static <T> Pipeline<T, T> giving(Supplier<T> supplier) {
+    public static <T> Pipeline<T, T> giving(Supplier<T> supplier) {
         return (obj) -> Optional.of(supplier.get());
     }
 
@@ -41,7 +41,7 @@ public class Pipes {
      * @param processor Consumer that will process the input element
      * @return {@code Pipeline<T, T>}
      */
-    static <T> Pipeline<T, T> processing(Consumer<T> processor) {
+    public static <T> Pipeline<T, T> processing(Consumer<T> processor) {
         return (obj) -> {
             processor.accept(obj);
             return Optional.of(obj);
@@ -55,7 +55,7 @@ public class Pipes {
      * @param runnable Runnable to be executed
      * @return {@code Pipeline<T, T>}
      */
-    static <T> Pipeline<T, T> running(Runnable runnable) {
+    public static <T> Pipeline<T, T> running(Runnable runnable) {
         return (obj) -> {
             runnable.run();
             return Optional.of(obj);
@@ -70,7 +70,7 @@ public class Pipes {
      * @param filter Predicate that will filter the element processed by the pipeline
      * @return {@code Pipeline<T, T>}
      */
-    static <T> Pipeline<T, T> filtering(Predicate<T> filter) {
+    public static <T> Pipeline<T, T> filtering(Predicate<T> filter) {
         return (obj) -> filter.test(obj) ? Optional.of(obj) : Optional.empty();
     }
 
@@ -83,7 +83,7 @@ public class Pipes {
      * @param mapper Function that will transform the input element
      * @return {@code Pipeline<T, R>}
      */
-    static <T, R> Pipeline<T, R> mapping(Function<? super T, R> mapper) {
+    public static <T, R> Pipeline<T, R> mapping(Function<? super T, R> mapper) {
         return (obj) -> Optional.of(mapper.apply(obj));
     }
     

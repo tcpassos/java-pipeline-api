@@ -8,10 +8,10 @@ Java API to work with pipeline processing.
 ### Using the builder to build pipelines
 ``` java
 var  pipeline  =  Pipeline.<String>builder()
-						  .filter(s  ->  s.length() <  6)
-						  .map(s  ->  "Hello "  +  s)
-						  .process(System.out::println)
-						  .build();
+				.filter(s  ->  s.length() <  6)
+				.map(s  ->  "Hello "  +  s)
+				.process(System.out::println)
+				.build();
 
 // This will print "Hello World"
 pipeline.execute("World");
