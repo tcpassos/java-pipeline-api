@@ -1,3 +1,6 @@
+/**
+ * Pipeline module.
+ */
 module pipeline {
-    exports com.github.tcpassos.pipeline;
+    exports io.github.tcpassos.pipeline;
 }

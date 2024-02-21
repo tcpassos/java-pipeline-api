@@ -1,4 +1,4 @@
-package com.github.tcpassos.pipeline;
+package io.github.tcpassos.pipeline;
 
 import java.util.Collection;
 import java.util.List;
