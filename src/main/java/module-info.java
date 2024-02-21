@@ -2,5 +2,5 @@
  * Pipeline module.
  */
 module pipeline {
-    exports io.github.tcpassos.pipeline;
+    exports tcpassos.pipeline;
 }

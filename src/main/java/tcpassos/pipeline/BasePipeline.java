@@ -1,4 +1,4 @@
-package io.github.tcpassos.pipeline;
+package tcpassos.pipeline;
 
 /**
  * Base of a pipeline, which supports the processing of an input element, returning an output element.

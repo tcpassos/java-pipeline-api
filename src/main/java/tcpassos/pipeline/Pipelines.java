@@ -1,4 +1,4 @@
-package io.github.tcpassos.pipeline;
+package tcpassos.pipeline;
 
 import java.util.function.Consumer;
 import java.util.function.Function;

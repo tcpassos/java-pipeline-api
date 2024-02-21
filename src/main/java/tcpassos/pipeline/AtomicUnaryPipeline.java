@@ -1,4 +1,4 @@
-package io.github.tcpassos.pipeline;
+package tcpassos.pipeline;
 
 /**
  * A pipeline that can be atomically replaced.

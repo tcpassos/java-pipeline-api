@@ -1,4 +1,4 @@
-package io.github.tcpassos.pipeline;
+package tcpassos.pipeline;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;

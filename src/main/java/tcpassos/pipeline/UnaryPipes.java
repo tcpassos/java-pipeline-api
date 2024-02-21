@@ -1,24 +1,24 @@
-package io.github.tcpassos.pipeline;
+package tcpassos.pipeline;
 
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 /**
  * A collection of single-step pipelines.
  */
-public class Pipes {
+public class UnaryPipes {
 
     /**
      * Returns a single-step pipeline that will always return the value given as an output element
      *
      * @param <T> Type of input and output element
-     * @param value Value to be returned by the pipeline
-     * @return {@code Pipeline<T, T>}
+     * @param value Value to be returned as output element
+     * @return {@code UnaryPipeline<T>}
      */
-    static <T> Pipeline<T, T> giving(T value) {
+    static <T> UnaryPipeline<T> giving(T value) {
         return (obj) -> Optional.of(value);
     }
 
@@ -27,9 +27,9 @@ public class Pipes {
      *
      * @param <T> Type of input and output element
      * @param supplier Supplier that will provide the output element
-     * @return {@code Pipeline<T, T>}
+     * @return {@code UnaryPipeline<T>}
      */
-    static <T> Pipeline<T, T> giving(Supplier<T> supplier) {
+    static <T> UnaryPipeline<T> giving(Supplier<T> supplier) {
         return (obj) -> Optional.of(supplier.get());
     }
 
@@ -39,9 +39,9 @@ public class Pipes {
      *
      * @param <T> Type of input and output element
      * @param processor Consumer that will process the input element
-     * @return {@code Pipeline<T, T>}
+     * @return {@code UnaryPipeline<T>}
      */
-    static <T> Pipeline<T, T> processing(Consumer<T> processor) {
+    static <T> UnaryPipeline<T> processing(Consumer<T> processor) {
         return (obj) -> {
             processor.accept(obj);
             return Optional.of(obj);
@@ -51,11 +51,11 @@ public class Pipes {
     /**
      * Returns a single-step pipeline that will run a code and return the same input element to the next stage
      *
-     * @param <T> Input and output element type
+     * @param <T> Type of input and output element
      * @param runnable Runnable to be executed
-     * @return {@code Pipeline<T, T>}
+     * @return {@code UnaryPipeline<T>}
      */
-    static <T> Pipeline<T, T> running(Runnable runnable) {
+    static <T> UnaryPipeline<T> running(Runnable runnable) {
         return (obj) -> {
             runnable.run();
             return Optional.of(obj);
@@ -68,9 +68,9 @@ public class Pipes {
      *
      * @param <T> Type of input and output element
      * @param filter Predicate that will filter the element processed by the pipeline
-     * @return {@code Pipeline<T, T>}
+     * @return {@code UnaryPipeline<T>}
      */
-    static <T> Pipeline<T, T> filtering(Predicate<T> filter) {
+    static <T> UnaryPipeline<T> filtering(Predicate<T> filter) {
         return (obj) -> filter.test(obj) ? Optional.of(obj) : Optional.empty();
     }
 
@@ -78,12 +78,11 @@ public class Pipes {
      * Returns a single-step pipeline that will process the input element from a function and
      * return the transformed element
      *
-     * @param <T> Input element type
-     * @param <R> Output element type
+     * @param <T> Type of input and output element
      * @param mapper Function that will transform the input element
-     * @return {@code Pipeline<T, R>}
+     * @return {@code UnaryPipeline<T>}
      */
-    static <T, R> Pipeline<T, R> mapping(Function<? super T, R> mapper) {
+    static <T> UnaryPipeline<T> mapping(UnaryOperator<T> mapper) {
         return (obj) -> Optional.of(mapper.apply(obj));
     }
     
