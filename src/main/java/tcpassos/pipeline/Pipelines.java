@@ -1,10 +1,18 @@
 package tcpassos.pipeline;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+
+import tcpassos.pipeline.BranchedPipeline.Builder;
 
 /**
  * Utility class for pipeline operations
@@ -34,6 +42,32 @@ final class Pipelines {
         @Override
         public Pipeline.Builder<BEGIN, END> filter(Predicate<END> filter) {
             return new PipelineBuilderImpl<>(pipeline.connect(Pipes.filtering(filter)));
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public <NEW_END> BranchedPipeline.Builder<BEGIN, NEW_END> fork(Function<Pipeline.Builder<BEGIN, END>, Pipeline.Builder<BEGIN, NEW_END>> ... branches) {
+            BranchedPipeline<BEGIN, NEW_END> pipe = (input) -> Arrays.stream(branches)
+                .map(f -> f.apply(this).build())
+                .flatMap(p -> p.execute(input).stream())
+                .toList();
+            return BranchedPipeline.builder(pipe);
+        }
+
+        @Override
+        public <NEW_END> BranchedPipeline.Builder<BEGIN, NEW_END> fork(Collection<OptionalPipeline<END, NEW_END>> pipelines) {
+            BranchedPipeline<BEGIN, NEW_END> pipe = (input) -> pipeline.execute(input)
+                .map(result -> pipelines.stream()
+                    .map(p -> p.execute(result))
+                    .flatMap(Optional::stream)
+                    .toList())
+                .orElse(Collections.emptyList());
+            return BranchedPipeline.builder(pipe);            
+        }
+
+        @Override
+        public <NEW_END> Builder<BEGIN, NEW_END> fork(BranchedPipeline<? super END, NEW_END> nextPipe) {
+            return new BranchedPipelineBuilderImpl<>(pipeline.connect(nextPipe));
         }
 
         @Override
@@ -108,6 +142,72 @@ final class Pipelines {
 
         @Override
         public UnaryPipeline<T> build() {
+            return pipeline;
+        }
+
+    }
+
+    static final class BranchedPipelineBuilderImpl <BEGIN, END> implements BranchedPipeline.Builder<BEGIN, END> {
+
+        private final BranchedPipeline<BEGIN, END> pipeline;
+
+        BranchedPipelineBuilderImpl(BranchedPipeline<BEGIN, END> pipeline) {
+            this.pipeline = pipeline;
+        }
+
+        @Override
+        public Builder<BEGIN, END> give(END value) {
+            return new BranchedPipelineBuilderImpl<>(pipeline.forceConnect(Pipes.giving(value)));
+        }
+
+        @Override
+        public Builder<BEGIN, END> give(Collection<END> values) {
+            BranchedPipeline<END, END> pipe = (input) -> new ArrayList<>(values);
+            return new BranchedPipelineBuilderImpl<>(pipeline.forceConnect(pipe));
+        }
+
+        @Override
+        public Builder<BEGIN, END> give(Supplier<END> supplier) {
+            return new BranchedPipelineBuilderImpl<>(pipeline.connect(Pipes.giving(supplier)));
+        }
+
+        @Override
+        public Builder<BEGIN, END> filter(Predicate<END> filter) {
+            return new BranchedPipelineBuilderImpl<>(pipeline.connect(Pipes.filtering(filter)));
+        }
+
+        @Override
+        public Pipeline.Builder<BEGIN, END> join(BinaryOperator<END> joiner) {
+            return new PipelineBuilderImpl<>(pipeline.join(joiner));
+        }
+
+        @Override
+        public <NEW_END> Builder<BEGIN, NEW_END> map(Function<? super END, NEW_END> mapper) {
+            return new BranchedPipelineBuilderImpl<>(pipeline.connect(Pipes.mapping(mapper)));
+        }
+
+        @Override
+        public <NEW_END> Builder<BEGIN, NEW_END> pipe(OptionalPipeline<? super END, NEW_END> nextPipe) {
+            return new BranchedPipelineBuilderImpl<>(pipeline.connect(nextPipe));
+        }
+
+        @Override
+        public <NEW_END> Builder<BEGIN, NEW_END> pipe(BranchedPipeline<? super END, NEW_END> nextPipe) {
+            return new BranchedPipelineBuilderImpl<>(pipeline.connect(nextPipe));
+        }
+
+        @Override
+        public Builder<BEGIN, END> process(Consumer<END> processor) {
+            return new BranchedPipelineBuilderImpl<>(pipeline.connect(Pipes.processing(processor)));
+        }
+
+        @Override
+        public Builder<BEGIN, END> run(Runnable runnable) {
+            return new BranchedPipelineBuilderImpl<>(pipeline.connect(Pipes.running(runnable)));
+        }
+
+        @Override
+        public BranchedPipeline<BEGIN, END> build() {
             return pipeline;
         }
 

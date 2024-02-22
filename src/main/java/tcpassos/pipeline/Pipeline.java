@@ -1,5 +1,9 @@
 package tcpassos.pipeline;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -59,7 +63,7 @@ public interface Pipeline <BEGIN, END> extends OptionalPipeline <BEGIN,END> {
      * @param nextPipe Pipeline to be connected at the end of this pipeline
      * @return {@code Pipeline<BEGIN, NEW_END>}
      */
-    default <NEW_END> Pipeline<BEGIN, NEW_END> connect(OptionalPipeline<? super END, NEW_END> nextPipe) {
+    default <NEW_END> Pipeline<BEGIN, NEW_END> connect(BasePipeline<? super END, Optional<NEW_END>> nextPipe) {
         return (BEGIN obj) -> {
             Optional<END> newObjOpt = execute(obj);
             if (newObjOpt.isPresent()) {
@@ -70,13 +74,45 @@ public interface Pipeline <BEGIN, END> extends OptionalPipeline <BEGIN,END> {
     }
 
     /**
+     * Connect this pipeline with multiple pipelines generating a branched pipeline
+     *
+     * @param <NEW_END> New pipeline output element type
+     * @param nextPipes Pipelines to be connected at the end of this pipeline
+     * @return {@code BranchedPipeline<BEGIN, NEW_END>}
+     */
+    default <NEW_END> BranchedPipeline<BEGIN, NEW_END> connect(Collection<BasePipeline<? super END, Optional<NEW_END>>> nextPipes) {
+        return (input) -> {
+            List<NEW_END> results = new ArrayList<>();
+            execute(input).ifPresent(output -> {
+                for (var nextPipe : nextPipes) {
+                    nextPipe.execute(output).ifPresent(results::add);
+                }
+            });
+            return results;
+        };
+    }
+
+    /**
+     * Connects the current pipeline to the specified branched pipeline.
+     * 
+     * @param nextPipe the branched pipeline to connect to
+     * @param <NEW_END> the type of the end result of the branched pipeline
+     * @return the connected branched pipeline
+     */
+    default <NEW_END> BranchedPipeline<BEGIN, NEW_END> connect(BranchedPipeline<? super END, NEW_END> nextPipe) {
+        return (input) -> execute(input)
+            .map(nextPipe::execute)
+            .orElse(Collections.emptyList());
+    }
+
+    /**
      * Connect this pipeline at the beginning of another pipeline without checking if the output element is present
      *
      * @param <NEW_END> New pipeline output element type
      * @param nextPipe Pipeline to be connected at the end of this pipeline
      * @return {@code UnaryPipeline<T>}
      */
-    default <NEW_END> Pipeline<BEGIN, NEW_END> forceConnect(OptionalPipeline<? super END, NEW_END> nextPipe) {
+    default <NEW_END> Pipeline<BEGIN, NEW_END> forceConnect(BasePipeline<? super END, Optional<NEW_END>> nextPipe) {
         return (BEGIN obj) -> {
             Optional<END> newObjOpt = execute(obj);
             return newObjOpt.isPresent() ? nextPipe.execute(newObjOpt.get()) : nextPipe.execute(null);
@@ -114,6 +150,34 @@ public interface Pipeline <BEGIN, END> extends OptionalPipeline <BEGIN,END> {
         * @return {@code Builder<BEGIN, END>}
         */
         Builder <BEGIN, END> filter(Predicate<END> filter);
+
+        /**
+         * Forks the pipeline into multiple branches.
+         *
+         * @param branches the functions that define the branches of the pipeline
+         * @param <NEW_END> the type of the new end result of the branches
+         * @return a builder for the branched pipeline
+         */
+        @SuppressWarnings("unchecked")
+        <NEW_END> BranchedPipeline.Builder<BEGIN, NEW_END> fork(Function<Builder<BEGIN, END>, Builder<BEGIN, NEW_END>> ... branches);
+        
+        /**
+         * Forks the pipeline into multiple branches.
+         *
+         * @param pipelines the pipelines to connect to
+         * @param <NEW_END> the type of the new end result of the branches
+         * @return a builder for the branched pipeline
+         */
+        <NEW_END> BranchedPipeline.Builder<BEGIN, NEW_END> fork(Collection<OptionalPipeline<END, NEW_END>> pipelines);
+
+        /**
+         * Forks the pipeline into a branched pipeline.
+         *
+         * @param nextPipe the branched pipeline to fork into
+         * @param <NEW_END> the type of the new end of the branched pipeline
+         * @return the branched pipeline
+         */
+        <NEW_END> BranchedPipeline.Builder<BEGIN, NEW_END> fork(BranchedPipeline<? super END, NEW_END> nextPipe);
 
         /**
          * Adds a stage to transform the output element of the pipeline
