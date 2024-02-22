@@ -43,6 +43,18 @@ final class Pipelines {
         public Pipeline.Builder<BEGIN, END> filter(Predicate<END> filter) {
             return new PipelineBuilderImpl<>(pipeline.connect(Pipes.filtering(filter)));
         }
+        
+        @Override
+        public <NEW_END> Pipeline.Builder<BEGIN, NEW_END> filterMap(Predicate<END> filter, Function<END, NEW_END> ifTrue) {
+            Pipeline<END, NEW_END> pipe = Pipes.filtering(filter).connect(Pipes.mapping(ifTrue));
+            return new PipelineBuilderImpl<BEGIN, NEW_END>(pipeline.connect(pipe));
+        }
+
+        @Override
+        public <NEW_END> Pipeline.Builder<BEGIN, NEW_END> filterMap(Predicate<END> filter, Function<END, NEW_END> ifTrue, Function<END, NEW_END> ifFalse) {
+            Pipeline<END, NEW_END> pipe = Pipes.filtering(filter.negate()).connect(Pipes.mapping(ifFalse));
+            return new PipelineBuilderImpl<BEGIN, NEW_END>(pipeline.connect(pipe));
+        }
 
         @Override
         @SuppressWarnings("unchecked")
@@ -118,6 +130,18 @@ final class Pipelines {
         @Override
         public UnaryPipeline.Builder<T> filter(Predicate<T> filter) {
             return new UnaryPipelineBuilderImpl<>(pipeline.connect(UnaryPipes.filtering(filter)));
+        }
+
+        @Override
+        public UnaryPipeline.Builder<T> filterMap(Predicate<T> filter, Function<T, T> ifTrue) {
+            UnaryPipeline<T> pipe = pipeline.connect(UnaryPipes.filtering(filter).connect(UnaryPipes.mapping(ifTrue)));
+            return new UnaryPipelineBuilderImpl<>(pipe);            
+        }
+
+        @Override
+        public UnaryPipeline.Builder<T> filterMap(Predicate<T> filter, Function<T, T> ifTrue, Function<T, T> ifFalse) {
+            UnaryPipeline<T> pipe = pipeline.connect(UnaryPipes.filtering(filter.negate()).connect(UnaryPipes.mapping(ifFalse)));
+            return new UnaryPipelineBuilderImpl<>(pipe);            
         }
 
         @Override
@@ -200,6 +224,16 @@ final class Pipelines {
         @Override
         public Builder<BEGIN, END> filter(Predicate<END> filter) {
             return new BranchedPipelineBuilderImpl<>(pipeline.connect(Pipes.filtering(filter)));
+        }
+
+        @Override
+        public <NEW_END> Builder<BEGIN, NEW_END> filterMap(Predicate<END> filter, Function<END, NEW_END> ifTrue) {
+            return new BranchedPipelineBuilderImpl<>(pipeline.connect(Pipes.filtering(filter).connect(Pipes.mapping(ifTrue))));
+        }
+
+        @Override
+        public <NEW_END> Builder<BEGIN, NEW_END> filterMap(Predicate<END> filter, Function<END, NEW_END> ifTrue, Function<END, NEW_END> ifFalse) {
+            return new BranchedPipelineBuilderImpl<>(pipeline.connect(Pipes.filtering(filter.negate()).connect(Pipes.mapping(ifFalse))));
         }
 
         @Override

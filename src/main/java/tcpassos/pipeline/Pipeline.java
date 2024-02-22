@@ -152,6 +152,27 @@ public interface Pipeline <BEGIN, END> extends OptionalPipeline <BEGIN,END> {
         Builder <BEGIN, END> filter(Predicate<END> filter);
 
         /**
+         * Filters the elements of the pipeline based on the given predicate and maps them to a new type using the provided function.
+         *
+         * @param filter the predicate used to filter the elements
+         * @param ifTrue the function used to map the filtered elements to a new type
+         * @param <NEW_END> the type of the new elements in the pipeline
+         * @return a new Builder instance with the filtered and mapped elements
+         */
+        <NEW_END> Builder <BEGIN, NEW_END> filterMap(Predicate<END> filter, Function<END, NEW_END> ifTrue);
+        
+        /**
+         * Filters the elements of the pipeline based on the given predicate and maps them to a new type.
+         *
+         * @param filter  the predicate used to filter the elements
+         * @param ifTrue  the function to apply to elements that satisfy the predicate
+         * @param ifFalse the function to apply to elements that do not satisfy the predicate
+         * @param <NEW_END> the type of the elements in the resulting pipeline
+         * @return a new Builder instance with the filtered and mapped elements
+         */
+        <NEW_END> Builder <BEGIN, NEW_END> filterMap(Predicate<END> filter, Function<END, NEW_END> ifTrue, Function<END, NEW_END> ifFalse);
+
+        /**
          * Forks the pipeline into multiple branches.
          *
          * @param branches the functions that define the branches of the pipeline

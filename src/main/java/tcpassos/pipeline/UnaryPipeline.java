@@ -142,6 +142,25 @@ public interface UnaryPipeline <T> extends OptionalPipeline <T,T> {
         Builder <T> filter(Predicate<T> filter);
 
         /**
+         * Filters and maps the elements of the pipeline.
+         *
+         * @param filter the predicate used to filter the elements
+         * @param ifTrue the function used to map the elements if the predicate is true
+         * @return a new pipeline with the filtered and mapped elements
+         */
+        Builder <T> filterMap(Predicate<T> filter, Function<T, T> ifTrue);
+        
+        /**
+         * Filters the elements of the pipeline based on the given predicate and applies the corresponding mapping functions.
+         *
+         * @param filter the predicate used to filter the elements
+         * @param ifTrue the mapping function to be applied to elements that satisfy the predicate
+         * @param ifFalse the mapping function to be applied to elements that do not satisfy the predicate
+         * @return a new pipeline with the filtered and mapped elements
+         */
+        Builder <T> filterMap(Predicate<T> filter, Function<T, T> ifTrue, Function<T, T> ifFalse);
+
+        /**
          * Forks the pipeline into multiple branches.
          *
          * @param branches the functions that define the branches of the pipeline
