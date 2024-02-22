@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -141,6 +142,24 @@ public interface UnaryPipeline <T> extends OptionalPipeline <T,T> {
         Builder <T> filter(Predicate<T> filter);
 
         /**
+         * Forks the pipeline into multiple branches.
+         *
+         * @param branches the functions that define the branches of the pipeline
+         * @return a builder for the branched pipeline
+         */
+        @SuppressWarnings("unchecked")
+        public BranchedPipeline.Builder<T, T> fork(Function<UnaryPipeline.Builder<T>, UnaryPipeline.Builder<T>>... branches);
+
+        /**
+         * Forks the pipeline into multiple branches.
+         *
+         * @param pipelines the pipelines to connect to
+         * @param <NEW_END> the type of the new end result of the branches
+         * @return a builder for the branched pipeline
+         */
+        <NEW_END> BranchedPipeline.Builder<T, NEW_END> fork(Collection<OptionalPipeline<T, NEW_END>> pipelines);
+
+        /**
          * Adds a stage to transform the output element of the pipeline
          *
          * @param mapper Function to transform the output element
@@ -155,6 +174,15 @@ public interface UnaryPipeline <T> extends OptionalPipeline <T,T> {
          * @return {@code Builder<T>}
          */
         Builder <T> pipe(OptionalPipeline<? super T, T> nextPipe);
+
+        /**
+         * Connects the current pipeline to the specified branched pipeline.
+         * 
+         * @param <NEW_END> the type of the end result of the branched pipeline
+         * @param nextPipe the branched pipeline to connect to
+         * @return the builder for the branched pipeline
+         */
+        <NEW_END> BranchedPipeline.Builder<T, NEW_END> pipe(BranchedPipeline<? super T, NEW_END> nextPipe);
 
         /**
          * Adds a stage to process the output element of the pipeline

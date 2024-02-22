@@ -62,12 +62,7 @@ final class Pipelines {
                     .flatMap(Optional::stream)
                     .toList())
                 .orElse(Collections.emptyList());
-            return BranchedPipeline.builder(pipe);            
-        }
-
-        @Override
-        public <NEW_END> Builder<BEGIN, NEW_END> fork(BranchedPipeline<? super END, NEW_END> nextPipe) {
-            return new BranchedPipelineBuilderImpl<>(pipeline.connect(nextPipe));
+            return BranchedPipeline.builder(pipe);
         }
 
         @Override
@@ -78,6 +73,11 @@ final class Pipelines {
         @Override
         public <NEW_END> Pipeline.Builder<BEGIN, NEW_END> pipe(OptionalPipeline<? super END, NEW_END> nextPipe) {
             return new PipelineBuilderImpl<>(pipeline.connect(nextPipe));
+        }
+
+        @Override
+        public <NEW_END> Builder<BEGIN, NEW_END> pipe(BranchedPipeline<? super END, NEW_END> nextPipe) {
+            return new BranchedPipelineBuilderImpl<>(pipeline.connect(nextPipe));
         }
 
         @Override
@@ -121,6 +121,27 @@ final class Pipelines {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
+        public BranchedPipeline.Builder<T, T> fork(Function<UnaryPipeline.Builder<T>, UnaryPipeline.Builder<T>>... branches) {
+            BranchedPipeline<T, T> pipe = (input) -> Arrays.stream(branches)
+                .map(f -> f.apply(this).build())
+                .flatMap(p -> p.execute(input).stream())
+                .toList();
+            return BranchedPipeline.builder(pipe);
+        }
+    
+        @Override
+        public <NEW_END> Builder<T, NEW_END> fork(Collection<OptionalPipeline<T, NEW_END>> pipelines) {
+            BranchedPipeline<T, NEW_END> pipe = (input) -> pipeline.execute(input)
+                .map(result -> pipelines.stream()
+                    .map(p -> p.execute(result))
+                    .flatMap(Optional::stream)
+                    .toList())
+                .orElse(Collections.emptyList());
+            return BranchedPipeline.builder(pipe);
+        }
+
+        @Override
         public UnaryPipeline.Builder<T> map(UnaryOperator<T> mapper) {
             return new UnaryPipelineBuilderImpl<>(pipeline.connect(UnaryPipes.mapping(mapper)));
         }
@@ -128,6 +149,11 @@ final class Pipelines {
         @Override
         public UnaryPipeline.Builder<T> pipe(OptionalPipeline<? super T, T> nextPipe) {
             return new UnaryPipelineBuilderImpl<>(pipeline.connect(nextPipe));
+        }
+
+        @Override
+        public <NEW_END> Builder<T, NEW_END> pipe(BranchedPipeline<? super T, NEW_END> nextPipe) {
+            return new BranchedPipelineBuilderImpl<>(pipeline.connect(nextPipe));
         }
 
         @Override

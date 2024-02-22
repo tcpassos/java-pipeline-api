@@ -171,15 +171,6 @@ public interface Pipeline <BEGIN, END> extends OptionalPipeline <BEGIN,END> {
         <NEW_END> BranchedPipeline.Builder<BEGIN, NEW_END> fork(Collection<OptionalPipeline<END, NEW_END>> pipelines);
 
         /**
-         * Forks the pipeline into a branched pipeline.
-         *
-         * @param nextPipe the branched pipeline to fork into
-         * @param <NEW_END> the type of the new end of the branched pipeline
-         * @return the branched pipeline
-         */
-        <NEW_END> BranchedPipeline.Builder<BEGIN, NEW_END> fork(BranchedPipeline<? super END, NEW_END> nextPipe);
-
-        /**
          * Adds a stage to transform the output element of the pipeline
          *
          * @param <NEW_END> New output element type
@@ -196,6 +187,15 @@ public interface Pipeline <BEGIN, END> extends OptionalPipeline <BEGIN,END> {
          * @return {@code Builder<BEGIN, NEW_END>}
          */
         <NEW_END> Builder <BEGIN, NEW_END> pipe(OptionalPipeline<? super END, NEW_END> nextPipe);
+
+        /**
+         * Connects the current pipeline to the specified branched pipeline.
+         * 
+         * @param <NEW_END> the type of the end result of the branched pipeline
+         * @param nextPipe the branched pipeline to connect to
+         * @return the builder for the branched pipeline
+         */
+        <NEW_END> BranchedPipeline.Builder<BEGIN, NEW_END> pipe(BranchedPipeline<? super END, NEW_END> nextPipe);
 
         /**
          * Adds a stage to process the output element of the pipeline
