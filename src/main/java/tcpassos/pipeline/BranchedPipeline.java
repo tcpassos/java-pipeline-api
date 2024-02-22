@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -164,6 +165,40 @@ public interface BranchedPipeline <BEGIN, END> extends BasePipeline<BEGIN, List<
      */
     default Pipeline<BEGIN, END> join(BinaryOperator<END> joiner) {
         return (input) -> execute().stream().reduce(joiner);
+    }
+
+    /**
+     * Executes the pipeline with multiple input elements
+     *
+     * @param elements Input elements
+     * @return {@code List<END>}
+     */
+    default List<END> executeBatch(Collection<BEGIN> elements) {
+        return elements.stream()
+                       .map(this::execute)
+                       .reduce(new ArrayList<>(), (acc, list) -> {
+                           acc.addAll(list);
+                           return acc;
+                       });
+    }
+
+    /**
+     * Executes the pipeline asynchronously
+     *
+     * @param obj Input element
+     * @return {@code CompletableFuture<List<END>>}
+     */
+    default CompletableFuture<List<END>> executeAsync(BEGIN obj) {
+        return CompletableFuture.supplyAsync(() -> execute(obj));
+    }
+    
+    /**
+     * Executes the pipeline asynchronously without an input element
+     *
+     * @return {@code CompletableFuture<List<END>>}
+     */
+    default CompletableFuture<List<END>> executeAsync() {
+        return CompletableFuture.supplyAsync(() -> execute());
     }
 
     /**
