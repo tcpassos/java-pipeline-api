@@ -228,6 +228,27 @@ public interface BranchedPipeline <BEGIN, END> extends BasePipeline<BEGIN, List<
         <NEW_END> Builder <BEGIN, NEW_END> filterMap(Predicate<END> filter, Function<END, NEW_END> ifTrue, Function<END, NEW_END> ifFalse);
 
         /**
+         * Filters the pipeline process based on the given filter predicate.
+         * If the filter predicate evaluates to true, the provided consumer is executed.
+         *
+         * @param filter the predicate used to filter the pipeline process
+         * @param ifTrue the consumer to be executed if the filter predicate evaluates to true
+         * @return the updated pipeline builder
+         */
+        Builder <BEGIN, END> filterProcess(Predicate<END> filter, Consumer<END> ifTrue);
+
+        /**
+         * Filters the elements in the pipeline based on the given predicate and performs
+         * different actions depending on whether the predicate is true or false.
+         *
+         * @param filter  the predicate used to filter the elements
+         * @param ifTrue  the consumer to be executed for elements that pass the filter
+         * @param ifFalse the consumer to be executed for elements that do not pass the filter
+         * @return the builder instance with the filter process added
+         */
+        Builder <BEGIN, END> filterProcess(Predicate<END> filter, Consumer<END> ifTrue, Consumer<END> ifFalse);
+
+        /**
          * Joins the output of the pipeline with another pipeline using the specified binary operator.
          *
          * @param joiner the binary operator used to join the output
