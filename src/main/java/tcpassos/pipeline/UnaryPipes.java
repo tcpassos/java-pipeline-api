@@ -4,34 +4,11 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 /**
  * A collection of single-step pipelines.
  */
 public class UnaryPipes {
-
-    /**
-     * Returns a single-step pipeline that will always return the value given as an output element
-     *
-     * @param <T> Type of input and output element
-     * @param value Value to be returned as output element
-     * @return {@code UnaryPipeline<T>}
-     */
-    public static <T> UnaryPipeline<T> giving(T value) {
-        return (obj) -> Optional.of(value);
-    }
-
-    /**
-     * Returns a single-step pipeline that will always return the value given by the supplier as an output element
-     *
-     * @param <T> Type of input and output element
-     * @param supplier Supplier that will provide the output element
-     * @return {@code UnaryPipeline<T>}
-     */
-    public static <T> UnaryPipeline<T> giving(Supplier<T> supplier) {
-        return (obj) -> Optional.of(supplier.get());
-    }
 
     /**
      * Returns a single-step pipeline that will process the input element and return the same element

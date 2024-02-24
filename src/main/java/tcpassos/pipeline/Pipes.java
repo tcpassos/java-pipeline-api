@@ -18,7 +18,7 @@ public class Pipes {
      * @param value Value to be returned by the pipeline
      * @return {@code Pipeline<T, T>}
      */
-    public static <T> Pipeline<T, T> giving(T value) {
+    public static <T> Pipeline<Void, T> giving(T value) {
         return (obj) -> Optional.of(value);
     }
 
@@ -29,7 +29,7 @@ public class Pipes {
      * @param supplier Supplier that will provide the output element
      * @return {@code Pipeline<T, T>}
      */
-    public static <T> Pipeline<T, T> giving(Supplier<T> supplier) {
+    public static <T> Pipeline<Void, T> giving(Supplier<T> supplier) {
         return (obj) -> Optional.of(supplier.get());
     }
 

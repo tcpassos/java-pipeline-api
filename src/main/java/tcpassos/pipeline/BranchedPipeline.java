@@ -10,6 +10,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  * Represents a branched pipeline that takes an input of type BEGIN and produces a list of outputs of type END.
@@ -113,6 +114,46 @@ public interface BranchedPipeline <BEGIN, END> extends BasePipeline<BEGIN, List<
                 acc.addAll(list);
                 return acc;
             });
+    }
+
+    /**
+     * Connects the current pipeline to a void pipeline, creating a new branched pipeline.
+     * The new pipeline takes the input from the current pipeline, executes it, and then passes the results to the void pipeline.
+     * The void pipeline is executed for each result, and the non-empty results are collected into a list.
+     *
+     * @param nextPipe the void pipeline to connect to
+     * @param <NEW_END> the type of the new pipeline's end result
+     * @return a new branched pipeline that connects the current pipeline to the void pipeline
+     */
+    default <NEW_END> BranchedPipeline<BEGIN, NEW_END> connectVoid(BasePipeline<Void, Optional<NEW_END>> nextPipe) {
+        return (input) -> {
+            List<END> results = execute(input);
+            return Stream.generate(() -> nextPipe.execute())
+                        .limit(results.size())
+                        .flatMap(Optional::stream)
+                        .toList();
+        };
+    }
+
+    /**
+     * Connects this branched pipeline to another branched pipeline that takes no input.
+     * Executes this pipeline with the given input, and then executes the next pipeline for each result.
+     * Returns a new branched pipeline that collects the results of executing the next pipeline.
+     *
+     * @param nextPipe the next branched pipeline to connect to
+     * @param <NEW_END> the type of the output of the next pipeline
+     * @return a new branched pipeline that collects the results of executing the next pipeline
+     */
+    default <NEW_END> BranchedPipeline<BEGIN, NEW_END> connectVoid(BranchedPipeline<Void, NEW_END> nextPipe) {
+        return (input) -> {
+            List<END> results = execute(input);
+            return Stream.generate(() -> nextPipe.execute())
+                        .limit(results.size())
+                        .reduce(new ArrayList<>(), (acc, list) -> {
+                            acc.addAll(list);
+                            return acc;
+                        });
+        };
     }
 
     /**

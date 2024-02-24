@@ -12,6 +12,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 import tcpassos.pipeline.BranchedPipeline.Builder;
 
@@ -31,13 +32,22 @@ final class Pipelines {
         }
 
         @Override
+        public BranchedPipeline.Builder<BEGIN, END> copy(int n) {
+            BranchedPipeline<BEGIN, END> pipe = (input) -> Stream.generate(() -> pipeline.execute(input))
+                .flatMap(opt -> opt.map(Stream::of).orElseGet(Stream::empty))
+                .limit(n)
+                .toList();
+            return BranchedPipeline.builder(pipe);
+        }
+
+        @Override
         public Pipeline.Builder<BEGIN, END> give(END obj) {
-            return new PipelineBuilderImpl<>(pipeline.forceConnect(Pipes.giving(obj)));
+            return new PipelineBuilderImpl<>(pipeline.connectVoid(Pipes.giving(obj)));
         }
 
         @Override
         public Pipeline.Builder<BEGIN, END> give(Supplier<END> supplier) {
-            return new PipelineBuilderImpl<>(pipeline.forceConnect(Pipes.giving(supplier)));
+            return new PipelineBuilderImpl<>(pipeline.connectVoid(Pipes.giving(supplier)));
         }
 
         @Override
@@ -132,16 +142,6 @@ final class Pipelines {
 
         UnaryPipelineBuilderImpl(UnaryPipeline<T> pipeline) {
             this.pipeline = pipeline;
-        }
-
-        @Override
-        public UnaryPipeline.Builder<T> give(T obj) {
-            return new UnaryPipelineBuilderImpl<>(pipeline.forceConnect(UnaryPipes.giving(obj)));
-        }
-
-        @Override
-        public UnaryPipeline.Builder<T> give(Supplier<T> supplier) {
-            return new UnaryPipelineBuilderImpl<>(pipeline.forceConnect(UnaryPipes.giving(supplier)));
         }
 
         @Override
@@ -240,18 +240,18 @@ final class Pipelines {
 
         @Override
         public Builder<BEGIN, END> give(END value) {
-            return new BranchedPipelineBuilderImpl<>(pipeline.forceConnect(Pipes.giving(value)));
+            return new BranchedPipelineBuilderImpl<>(pipeline.connectVoid(Pipes.giving(value)));
         }
 
         @Override
         public Builder<BEGIN, END> give(Collection<END> values) {
-            BranchedPipeline<END, END> pipe = (input) -> new ArrayList<>(values);
-            return new BranchedPipelineBuilderImpl<>(pipeline.forceConnect(pipe));
+            BranchedPipeline<Void, END> pipe = (input) -> new ArrayList<>(values);
+            return new BranchedPipelineBuilderImpl<>(pipeline.connectVoid(pipe));
         }
 
         @Override
         public Builder<BEGIN, END> give(Supplier<END> supplier) {
-            return new BranchedPipelineBuilderImpl<>(pipeline.connect(Pipes.giving(supplier)));
+            return new BranchedPipelineBuilderImpl<>(pipeline.connectVoid(Pipes.giving(supplier)));
         }
 
         @Override

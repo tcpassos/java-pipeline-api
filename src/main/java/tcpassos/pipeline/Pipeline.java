@@ -106,6 +106,20 @@ public interface Pipeline <BEGIN, END> extends OptionalPipeline <BEGIN,END> {
     }
 
     /**
+     * Connects the current pipeline to a void pipeline, ignoring the result of the current pipeline.
+     * 
+     * @param nextPipe the void pipeline to connect to
+     * @param <NEW_END> the type of the new end result
+     * @return a branched pipeline that executes the current pipeline and then the void pipeline
+     */
+    default <NEW_END> Pipeline<BEGIN, NEW_END> connectVoid(BasePipeline<Void, Optional<NEW_END>> nextPipe) {
+        return (BEGIN obj) -> {
+            execute(obj);
+            return nextPipe.execute();
+        };
+    }
+
+    /**
      * Connect this pipeline at the beginning of another pipeline without checking if the output element is present
      *
      * @param <NEW_END> New pipeline output element type
@@ -115,7 +129,7 @@ public interface Pipeline <BEGIN, END> extends OptionalPipeline <BEGIN,END> {
     default <NEW_END> Pipeline<BEGIN, NEW_END> forceConnect(BasePipeline<? super END, Optional<NEW_END>> nextPipe) {
         return (BEGIN obj) -> {
             Optional<END> newObjOpt = execute(obj);
-            return newObjOpt.isPresent() ? nextPipe.execute(newObjOpt.get()) : nextPipe.execute(null);
+            return newObjOpt.isPresent() ? nextPipe.execute(newObjOpt.get()) : nextPipe.execute();
         };
     }
 
@@ -126,6 +140,14 @@ public interface Pipeline <BEGIN, END> extends OptionalPipeline <BEGIN,END> {
      * @param <END> Output element type of the pipeline
      */
     public interface Builder <BEGIN, END> {
+
+        /**
+         * Returns a new branched pipeline builder with the same configuration as the current builder with n copies of the pipeline
+         * 
+         * @param n the number of copies to create
+         * @return {@code BranchedPipeline.Builder<BEGIN, END>}
+         */
+        BranchedPipeline.Builder <BEGIN, END> copy(int n);
 
         /**
          * Adds a stage to give an input element to the pipeline

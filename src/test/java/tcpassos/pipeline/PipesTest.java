@@ -13,16 +13,16 @@ class PipesTest {
     @Test
     void testGivingWithValue() {
         String value = "Hello";
-        Pipeline<String, String> pipeline = Pipes.giving(value);
-        Optional<String> result = pipeline.execute("World");
+        Pipeline<Void, String> pipeline = Pipes.giving(value);
+        Optional<String> result = pipeline.execute();
         assertEquals(value, result.get());
     }
 
     @Test
     void testGivingWithSupplier() {
         Supplier<Integer> supplier = () -> 42;
-        Pipeline<Integer, Integer> pipeline = Pipes.giving(supplier);
-        Optional<Integer> result = pipeline.execute(10);
+        Pipeline<Void, Integer> pipeline = Pipes.giving(supplier);
+        Optional<Integer> result = pipeline.execute();
         assertEquals(42, result.get());
     }
 

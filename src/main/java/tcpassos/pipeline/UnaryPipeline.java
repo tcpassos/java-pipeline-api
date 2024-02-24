@@ -8,7 +8,6 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 /**
@@ -116,22 +115,6 @@ public interface UnaryPipeline <T> extends OptionalPipeline <T,T> {
      * @param <T> Input and output element type of the pipeline
      */
     public interface Builder <T> {
-
-        /**
-         * Adds a stage to give an input element to the pipeline
-         *
-         * @param obj Input element
-         * @return {@code Builder<T>}
-         */
-        Builder <T> give(T obj);
-
-        /**
-         * Adds a stage to give an input element to the pipeline
-         *
-         * @param supplier Supplier of the input element
-         * @return {@code Builder<T>}
-         */
-        Builder <T> give(Supplier<T> supplier);
 
         /**
         * Adds a stage to filter the output element of the pipeline

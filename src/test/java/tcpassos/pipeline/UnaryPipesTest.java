@@ -7,28 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import org.junit.jupiter.api.Test;
 
 class UnaryPipesTest {
-
-    @Test
-    void testGivingWithValue() {
-        String value = "Hello";
-        UnaryPipeline<String> pipeline = UnaryPipes.giving(value);
-        Optional<String> result = pipeline.execute("World");
-        assertEquals(value, result.get());
-    }
-
-    @Test
-    void testGivingWithSupplier() {
-        Supplier<Integer> supplier = () -> 42;
-        UnaryPipeline<Integer> pipeline = UnaryPipes.giving(supplier);
-        Optional<Integer> result = pipeline.execute(10);
-        assertEquals(42, result.get());
-    }
 
     @Test
     void testProcessing() {
