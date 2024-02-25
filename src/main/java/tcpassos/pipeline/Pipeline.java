@@ -8,7 +8,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import tcpassos.pipeline.Pipelines.PipelineBranchedImpl;
+import tcpassos.pipeline.classes.BranchedPipelineImpl;
+import tcpassos.pipeline.classes.PipelineBuilderImpl;
 
 /**
  * Processing pipeline using generics.
@@ -30,7 +31,7 @@ public interface Pipeline <BEGIN, END> extends OptionalPipeline <BEGIN,END> {
      * @return {@code Builder<T, T>}
      */
     static <T> Builder<T, T> builder() {
-        return new Pipelines.PipelineBuilderImpl<>(empty());
+        return new PipelineBuilderImpl<>(empty());
     }
 
     /**
@@ -42,7 +43,7 @@ public interface Pipeline <BEGIN, END> extends OptionalPipeline <BEGIN,END> {
      * @return {@code Builder<T, T>}
      */
     static <T, R> Builder<T, R> builder(Pipeline<T, R> pipeline) {
-        return new Pipelines.PipelineBuilderImpl<>(pipeline);
+        return new PipelineBuilderImpl<>(pipeline);
     }
 
     /**
@@ -81,7 +82,7 @@ public interface Pipeline <BEGIN, END> extends OptionalPipeline <BEGIN,END> {
      * @return a branched pipeline representing the connection between the current pipeline and the next pipelines
      */
     default <NEW_END> Branched<BEGIN, NEW_END> connect(Collection<Pipeline<END, NEW_END>> next) {
-        return new PipelineBranchedImpl<BEGIN, END, NEW_END>(this, next);
+        return new BranchedPipelineImpl<BEGIN, END, NEW_END>(this, next);
     }
 
     /**
@@ -99,20 +100,6 @@ public interface Pipeline <BEGIN, END> extends OptionalPipeline <BEGIN,END> {
     }
 
     /**
-     * Connect this pipeline at the beginning of another pipeline without checking if the output element is present
-     *
-     * @param <NEW_END> New pipeline output element type
-     * @param nextPipe Pipeline to be connected at the end of this pipeline
-     * @return {@code UnaryPipeline<T>}
-     */
-    default <NEW_END> Pipeline<BEGIN, NEW_END> forceConnect(BasePipeline<? super END, Optional<NEW_END>> nextPipe) {
-        return (BEGIN obj) -> {
-            Optional<END> newObjOpt = execute(obj);
-            return newObjOpt.isPresent() ? nextPipe.execute(newObjOpt.get()) : nextPipe.execute();
-        };
-    }
-
-    /**
      * Represents a branched pipeline in the Java Pipeline API.
      * A branched pipeline takes an input of type BEGIN and produces a list of outputs of type END.
      * It extends the MergablePipeline interface and provides additional functionality for merging the branches.
@@ -120,7 +107,17 @@ public interface Pipeline <BEGIN, END> extends OptionalPipeline <BEGIN,END> {
      * @param <BEGIN> the type of the input to the pipeline
      * @param <END> the type of the output from the pipeline
      */
-    public interface Branched <BEGIN, END> extends MergablePipeline<BEGIN, List<END>, Pipeline<BEGIN, END>, END> { }
+    public interface Branched <BEGIN, END> extends MergeablePipeline<BEGIN, List<END>, Pipeline<BEGIN, END>, END> { }
+
+    /**
+     * Represents a parallel pipeline in the Java Pipeline API.
+     * A parallel pipeline is a type of pipeline that takes a collection of input elements of type BEGIN,
+     * processes them in parallel, and produces a collection of output elements of type END.
+     *
+     * @param <BEGIN> the type of the input elements
+     * @param <END> the type of the output elements
+     */
+    public interface Parallel <BEGIN, END> extends MergeablePipeline<BEGIN, List<END>, Pipeline<BEGIN, END>, END> { }
 
     /**
      * Builder with methods to add stages to the pipeline

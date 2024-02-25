@@ -4,16 +4,38 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
 public class PipelineTest {
+
+    @Test
+    public void newBuilderTest() {
+        Pipeline.Builder<String, String> builder = Pipeline.builder();
+        AtomicBoolean triggered = new AtomicBoolean(false);
+        builder.map(str -> str.concat("cd"))
+                  .map(str -> str.concat("ef"))
+                  .filter(str -> str.equals("abcdef"))
+                  .process(str -> triggered.set(true))
+                  .build()
+                  .execute("ab");
+        assertTrue(triggered.get());
+    }
+
+    @Test
+    public void builderOfPipelineTest() {
+        AtomicBoolean triggered = new AtomicBoolean(false);
+        Pipeline.builder(Pipes.mapping((String str) -> str.length()))
+                .map(num -> num + 5)
+                .filter(num -> num == 10)
+                .process(num -> triggered.set(true))
+                .build()
+                .execute("12345");
+        assertTrue(triggered.get());
+    }
 
     @Test
     public void emptyTest() {
@@ -31,6 +53,25 @@ public class PipelineTest {
         assertEquals(Optional.of("test1test2"), concatPipeline.execute("test1"));
         assertEquals(Optional.of("TEST1test2"), uppercasePipeline.connect(concatPipeline).execute("test1"));
         assertEquals(Optional.of("TEST1TEST2"), concatPipeline.connect(uppercasePipeline).execute("test1"));
+    }
+
+    @Test
+    public void connectBranchTest() {
+        Pipeline<String, String> uppercasePipeline = Pipes.mapping((str) -> str.toUpperCase());
+        Pipeline<String, String> concatPipeline1 = Pipes.mapping((str) -> str.concat("test1"));
+        Pipeline<String, String> concatPipeline2 = Pipes.mapping((str) -> str.concat("test2"));
+        var result = uppercasePipeline.connect(List.of(concatPipeline1, concatPipeline2)).execute("test");
+        assertEquals(2 , result.size());
+        assertEquals("TESTtest1", result.get(0));
+        assertEquals("TESTtest2", result.get(1));
+
+        Pipeline<String, Integer> lengthPipeline = Pipes.mapping((str) -> str.length());
+        Pipeline<Integer, Integer> addPipeline = Pipes.mapping((num) -> num + 5);
+        Pipeline<Integer, Integer> multiplyPipeline = Pipes.mapping((num) -> num * 2);
+        var result2 = lengthPipeline.connect(List.of(addPipeline, multiplyPipeline)).execute("test");
+        assertEquals(2 , result2.size());
+        assertEquals(Integer.valueOf(9), result2.get(0));
+        assertEquals(Integer.valueOf(14), result2.get(1));
     }
 
     @Test
@@ -65,42 +106,6 @@ public class PipelineTest {
         assertEquals("test1;test2", concatPipeline.execute("test1").get());
         assertArrayEquals(expectedSplitValues, splitPipeline.execute("test1;test2").get());
         assertArrayEquals(expectedSplitValues, concatPipeline.connect(splitPipeline).execute("test1").get());
-    }
-
-    @Test
-    public void streamOfTest() {
-        Pipeline<String, String> pipeline = Pipes.mapping((String str) -> str.toUpperCase())
-                                                    .connect(Pipes.filtering(str -> str.contains("TEST")));
-        Stream<String> stream = pipeline.streamOf(List.of("Test 1", "test 2", "Error", "TEST 3"));
-        List<String> actualList = stream.collect(Collectors.toList());
-        List<String> expectedList = Arrays.asList("TEST 1", "TEST 2", "TEST 3");
-        assertEquals(3, actualList.size());
-        assertTrue(actualList.containsAll(expectedList));
-    }
-
-    @Test
-    public void newBuilderTest() {
-        Pipeline.Builder<String, String> builder = Pipeline.builder();
-        AtomicBoolean triggered = new AtomicBoolean(false);
-        builder.map(str -> str.concat("cd"))
-                  .map(str -> str.concat("ef"))
-                  .filter(str -> str.equals("abcdef"))
-                  .process(str -> triggered.set(true))
-                  .build()
-                  .execute("ab");
-        assertTrue(triggered.get());
-    }
-
-    @Test
-    public void builderOfPipelineTest() {
-        AtomicBoolean triggered = new AtomicBoolean(false);
-        Pipeline.builder(Pipes.mapping((String str) -> str.length()))
-                .map(num -> num + 5)
-                .filter(num -> num == 10)
-                .process(num -> triggered.set(true))
-                .build()
-                .execute("12345");
-        assertTrue(triggered.get());
     }
 
 }

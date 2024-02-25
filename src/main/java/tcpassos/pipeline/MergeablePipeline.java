@@ -10,7 +10,7 @@ import java.util.function.BinaryOperator;
  * @param <BEGIN> the type of the beginning result
  * @param <END> the type of the end result
  */
-public interface MergablePipeline<BEGIN, END, P extends BasePipeline<BEGIN, ?>, P_END> extends BasePipeline<BEGIN, END> {
+public interface MergeablePipeline<BEGIN, END, P extends BasePipeline<BEGIN, ?>, P_END> extends BasePipeline<BEGIN, END> {
 
     /**
      * Joins multiple branch pipelines into a single pipeline using the specified joiner function.
