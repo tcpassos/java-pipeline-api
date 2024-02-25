@@ -11,6 +11,10 @@ import java.util.function.Supplier;
  */
 public class Pipes {
 
+    private Pipes() {
+        throw new IllegalStateException("Utility class");
+    }
+
     /**
      * Returns a single-step pipeline that will always return the value given as an output element
      *
