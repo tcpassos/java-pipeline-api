@@ -1,14 +1,14 @@
 package tcpassos.pipeline;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+
+import tcpassos.pipeline.Pipelines.PipelineBranchedImpl;
 
 /**
  * Processing pipeline using generics.
@@ -22,7 +22,6 @@ import java.util.function.Supplier;
  * </p>
  */
 public interface Pipeline <BEGIN, END> extends OptionalPipeline <BEGIN,END> {
-
 
     /**
      * Returns a builder to create a pipeline from scratch
@@ -74,35 +73,15 @@ public interface Pipeline <BEGIN, END> extends OptionalPipeline <BEGIN,END> {
     }
 
     /**
-     * Connect this pipeline with multiple pipelines generating a branched pipeline
+     * Connects the current pipeline to a collection of next pipelines.
+     * Returns a branched pipeline that represents the connection between the current pipeline and the next pipelines.
      *
-     * @param <NEW_END> New pipeline output element type
-     * @param nextPipes Pipelines to be connected at the end of this pipeline
-     * @return {@code BranchedPipeline<BEGIN, NEW_END>}
+     * @param next the collection of next pipelines to connect to
+     * @param <NEW_END> the type of the new end of the branched pipeline
+     * @return a branched pipeline representing the connection between the current pipeline and the next pipelines
      */
-    default <NEW_END> BranchedPipeline<BEGIN, NEW_END> connect(Collection<BasePipeline<? super END, Optional<NEW_END>>> nextPipes) {
-        return (input) -> {
-            List<NEW_END> results = new ArrayList<>();
-            execute(input).ifPresent(output -> {
-                for (var nextPipe : nextPipes) {
-                    nextPipe.execute(output).ifPresent(results::add);
-                }
-            });
-            return results;
-        };
-    }
-
-    /**
-     * Connects the current pipeline to the specified branched pipeline.
-     * 
-     * @param nextPipe the branched pipeline to connect to
-     * @param <NEW_END> the type of the end result of the branched pipeline
-     * @return the connected branched pipeline
-     */
-    default <NEW_END> BranchedPipeline<BEGIN, NEW_END> connect(BranchedPipeline<? super END, NEW_END> nextPipe) {
-        return (input) -> execute(input)
-            .map(nextPipe::execute)
-            .orElse(Collections.emptyList());
+    default <NEW_END> Branched<BEGIN, NEW_END> connect(Collection<Pipeline<END, NEW_END>> next) {
+        return new PipelineBranchedImpl<BEGIN, END, NEW_END>(this, next);
     }
 
     /**
@@ -134,20 +113,22 @@ public interface Pipeline <BEGIN, END> extends OptionalPipeline <BEGIN,END> {
     }
 
     /**
+     * Represents a branched pipeline in the Java Pipeline API.
+     * A branched pipeline takes an input of type BEGIN and produces a list of outputs of type END.
+     * It extends the MergablePipeline interface and provides additional functionality for merging the branches.
+     *
+     * @param <BEGIN> the type of the input to the pipeline
+     * @param <END> the type of the output from the pipeline
+     */
+    public interface Branched <BEGIN, END> extends MergablePipeline<BEGIN, List<END>, Pipeline<BEGIN, END>, END> { }
+
+    /**
      * Builder with methods to add stages to the pipeline
      *
      * @param <BEGIN> Input element type of the pipeline
      * @param <END> Output element type of the pipeline
      */
     public interface Builder <BEGIN, END> {
-
-        /**
-         * Returns a new branched pipeline builder with the same configuration as the current builder with n copies of the pipeline
-         * 
-         * @param n the number of copies to create
-         * @return {@code BranchedPipeline.Builder<BEGIN, END>}
-         */
-        BranchedPipeline.Builder <BEGIN, END> copy(int n);
 
         /**
          * Adds a stage to give an input element to the pipeline
@@ -216,25 +197,6 @@ public interface Pipeline <BEGIN, END> extends OptionalPipeline <BEGIN,END> {
         Builder <BEGIN, END> filterProcess(Predicate<END> filter, Consumer<END> ifTrue, Consumer<END> ifFalse);
 
         /**
-         * Forks the pipeline into multiple branches.
-         *
-         * @param branches the functions that define the branches of the pipeline
-         * @param <NEW_END> the type of the new end result of the branches
-         * @return a builder for the branched pipeline
-         */
-        @SuppressWarnings("unchecked")
-        <NEW_END> BranchedPipeline.Builder<BEGIN, NEW_END> fork(Function<Builder<BEGIN, END>, Builder<BEGIN, NEW_END>> ... branches);
-        
-        /**
-         * Forks the pipeline into multiple branches.
-         *
-         * @param pipelines the pipelines to connect to
-         * @param <NEW_END> the type of the new end result of the branches
-         * @return a builder for the branched pipeline
-         */
-        <NEW_END> BranchedPipeline.Builder<BEGIN, NEW_END> fork(Collection<OptionalPipeline<END, NEW_END>> pipelines);
-
-        /**
          * Adds a stage to transform the output element of the pipeline
          *
          * @param <NEW_END> New output element type
@@ -251,15 +213,6 @@ public interface Pipeline <BEGIN, END> extends OptionalPipeline <BEGIN,END> {
          * @return {@code Builder<BEGIN, NEW_END>}
          */
         <NEW_END> Builder <BEGIN, NEW_END> pipe(OptionalPipeline<? super END, NEW_END> nextPipe);
-
-        /**
-         * Connects the current pipeline to the specified branched pipeline.
-         * 
-         * @param <NEW_END> the type of the end result of the branched pipeline
-         * @param nextPipe the branched pipeline to connect to
-         * @return the builder for the branched pipeline
-         */
-        <NEW_END> BranchedPipeline.Builder<BEGIN, NEW_END> pipe(BranchedPipeline<? super END, NEW_END> nextPipe);
 
         /**
          * Adds a stage to process the output element of the pipeline
