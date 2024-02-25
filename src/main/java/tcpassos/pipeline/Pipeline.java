@@ -57,6 +57,15 @@ public interface Pipeline <BEGIN, END> extends OptionalPipeline <BEGIN,END> {
     }
 
     /**
+     * Returns an asynchronous pipeline that wraps this pipeline.
+     *
+     * @return the asynchronous pipeline
+     */
+    default AsyncPipeline<BEGIN, END> async() {
+        return AsyncPipeline.of(this);
+    }
+
+    /**
      * Connect this pipeline at the beginning of another pipeline
      *
      * @param <NEW_END> New pipeline output element type

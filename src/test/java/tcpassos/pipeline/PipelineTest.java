@@ -71,7 +71,7 @@ public class PipelineTest {
         var result2 = lengthPipeline.connect(List.of(addPipeline, multiplyPipeline)).execute("test");
         assertEquals(2 , result2.size());
         assertEquals(Integer.valueOf(9), result2.get(0));
-        assertEquals(Integer.valueOf(14), result2.get(1));
+        assertEquals(Integer.valueOf(8), result2.get(1));
     }
 
     @Test

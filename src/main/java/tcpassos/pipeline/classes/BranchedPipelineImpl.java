@@ -2,7 +2,6 @@ package tcpassos.pipeline.classes;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.BinaryOperator;
 
 import tcpassos.pipeline.Pipeline;
@@ -21,11 +20,11 @@ public class BranchedPipelineImpl <BEGIN, MIDDLE, END> implements Pipeline.Branc
     public Pipeline<BEGIN, END> merge(BinaryOperator<END> joiner) {
         return (obj) -> {
             var result = original.execute(obj);
-            return branches.stream()
-                           .flatMap(p -> p.execute(result.get()).stream())
-                           .reduce(joiner)
-                           .map(Optional::of)
-                           .orElse(Optional.empty());
+            return result.flatMap(res -> 
+                branches.stream()
+                        .flatMap(p -> p.execute(res).stream())
+                        .reduce(joiner)
+            );
         };
     }
 
