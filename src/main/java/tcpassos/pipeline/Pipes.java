@@ -79,6 +79,35 @@ public class Pipes {
     }
 
     /**
+     * Returns a pipeline that applies the given filter and mapping function to the input object.
+     * If the filter test passes, the mapping function is applied and the result is wrapped in an Optional.
+     * If the filter test fails, an empty Optional is returned.
+     *
+     * @param filter the predicate used to filter the input object
+     * @param ifTrue the function used to map the filtered input object to the desired result
+     * @param <T> the type of the input object
+     * @param <R> the type of the result
+     * @return a pipeline that applies the filter and mapping function to the input object
+     */
+    public static <T, R> Pipeline<T, R> filterMapping(Predicate<T> filter, Function<? super T, R> ifTrue) {
+        return (obj) -> filter.test(obj) ? Optional.ofNullable(ifTrue.apply(obj)) : Optional.empty();
+    }
+
+    /**
+     * Returns a pipeline that applies a filter to the input object and maps it to a result based on the filter's evaluation.
+     *
+     * @param filter  the predicate used to filter the input object
+     * @param ifTrue  the function to apply to the input object if the filter evaluates to true
+     * @param ifFalse the function to apply to the input object if the filter evaluates to false
+     * @param <T>     the type of the input object
+     * @param <R>     the type of the result
+     * @return a pipeline that applies the filter and mapping functions to the input object
+     */
+    public static <T, R> Pipeline<T, R> filterMapping(Predicate<T> filter, Function<? super T, R> ifTrue, Function<? super T, R> ifFalse) {
+        return (obj) -> filter.test(obj) ? Optional.ofNullable(ifTrue.apply(obj)) : Optional.ofNullable(ifFalse.apply(obj));
+    }
+
+    /**
      * Returns a single-step pipeline that will process the input element from a function and
      * return the transformed element
      *

@@ -27,8 +27,8 @@ public interface AsyncPipeline <BEGIN, END> extends BasePipeline<BEGIN, Completa
      */
     static <BEGIN, END> AsyncPipeline<BEGIN, END> of(BasePipeline<BEGIN, Optional<END>> pipeline) {
         return (input) -> CompletableFuture.completedFuture(input)
-                                          .thenApply(i -> pipeline.execute(i)
-                                                                  .orElseThrow(NoSuchElementException::new));
+                                          .thenApplyAsync(i -> pipeline.execute(i)
+                                                                        .orElseThrow(NoSuchElementException::new));
     }
 
     /**
@@ -42,7 +42,7 @@ public interface AsyncPipeline <BEGIN, END> extends BasePipeline<BEGIN, Completa
         return (input) -> this.execute(input)
                               .thenCompose(result -> next.execute(result)
                                                           .map(CompletableFuture::completedFuture)
-                                                          .orElseGet(() -> CompletableFuture.failedFuture(new NoSuchElementException("No value present"))));
+                                                          .orElseGet(() -> CompletableFuture.failedFuture(new NoSuchElementException())));
     }
 
     /**

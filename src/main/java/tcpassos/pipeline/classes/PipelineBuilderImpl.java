@@ -35,15 +35,12 @@ public class PipelineBuilderImpl <BEGIN, END> implements Pipeline.Builder<BEGIN,
     
     @Override
     public <NEW_END> Pipeline.Builder<BEGIN, NEW_END> filterMap(Predicate<END> filter, Function<END, NEW_END> ifTrue) {
-        Pipeline<END, NEW_END> pipe = Pipes.filtering(filter).connect(Pipes.mapping(ifTrue));
-        return new PipelineBuilderImpl<>(pipeline.connect(pipe));
+        return new PipelineBuilderImpl<>(pipeline.connect(Pipes.filterMapping(filter, ifTrue)));
     }
 
     @Override
     public <NEW_END> Pipeline.Builder<BEGIN, NEW_END> filterMap(Predicate<END> filter, Function<END, NEW_END> ifTrue, Function<END, NEW_END> ifFalse) {
-        Pipeline<BEGIN, NEW_END> pipe = (input) -> pipeline.execute(input)
-            .flatMap(result -> filter.test(result) ? Optional.ofNullable(ifTrue.apply(result)) : Optional.ofNullable(ifFalse.apply(result)));
-        return new PipelineBuilderImpl<>(pipe);
+        return new PipelineBuilderImpl<>(pipeline.connect(Pipes.filterMapping(filter, ifTrue, ifFalse)));
     }
 
     @Override
