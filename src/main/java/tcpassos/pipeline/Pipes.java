@@ -68,7 +68,7 @@ public class Pipes {
 
     /**
      * Returns a single-step pipeline that will process the input element and return the same element
-     * to the next stage if the element is valid according to the filter, null otherwise
+     * to the next stage if the element is valid according to the filter, {@code Optional.empty()} otherwise
      *
      * @param <T> Type of input and output element
      * @param filter Predicate that will filter the element processed by the pipeline
