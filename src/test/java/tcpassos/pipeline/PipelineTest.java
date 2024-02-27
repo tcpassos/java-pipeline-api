@@ -4,9 +4,15 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 
@@ -46,6 +52,67 @@ public class PipelineTest {
     }
 
     @Test
+    void testAsSupplier() {
+        Pipeline<String, Integer> pipeline = createPipeline();
+        Supplier<Optional<Integer>> supplier = pipeline.asSupplier();
+        Optional<Integer> result = supplier.get();
+        assertTrue(result.isPresent());
+        assertEquals(42, result.get());
+    }
+
+    @Test
+    void testAsNullableSupplier() {
+        Pipeline<String, Integer> pipeline = createPipeline();
+        Supplier<Integer> supplier = pipeline.asNullableSupplier();
+        Integer result = supplier.get();
+        assertEquals(42, result);
+    }
+
+    @Test
+    void testAsConsumer() {
+        Pipeline<String, Integer> pipeline = createPipeline();
+        Consumer<String> consumer = pipeline.asConsumer();
+        consumer.accept("Hello");
+        Optional<Integer> result = pipeline.execute();
+        assertTrue(result.isPresent());
+        assertEquals(42, result.get());
+    }
+
+    @Test
+    void testAsRunnable() {
+        Pipeline<String, Integer> pipeline = createPipeline();
+        Runnable runnable = pipeline.asRunnable();
+        runnable.run();
+        Optional<Integer> result = pipeline.execute();
+        assertTrue(result.isPresent());
+        assertEquals(42, result.get());
+    }
+
+    @Test
+    void testAsPredicate() {
+        Pipeline<String, Integer> pipeline = createPipeline();
+        Predicate<String> predicate = pipeline.asPredicate();
+        assertTrue(predicate.test("Hello"));
+    }
+
+    @Test
+    void testAsFunction() {
+        Pipeline<String, Integer> pipeline = createPipeline();
+        Function<String, Optional<Integer>> function = pipeline.asFunction();
+        Optional<Integer> result = function.apply("Hello");
+        assertTrue(result.isPresent());
+        assertEquals(42, result.get());
+    }
+
+    @Test
+    void testAsNullableFunction() {
+        Pipeline<String, Integer> pipeline = createPipeline();
+        Function<String, Integer> function = pipeline.asNullableFunction();
+        Integer result = function.apply("Hello");
+        assertEquals(42, result);
+    }
+
+    @Test
     public void connectTest() {
         Pipeline<String, String> uppercasePipeline = Pipes.mapping((str) -> str.toUpperCase());
         Pipeline<String, String> concatPipeline = Pipes.mapping((str) -> str.concat("test2"));
@@ -82,6 +149,15 @@ public class PipelineTest {
     }
 
     @Test
+    void testExecuteBatch() {
+        Pipeline<String, Integer> pipeline = createPipeline();
+        Collection<String> elements = Arrays.asList("Hello", "World");
+        List<Integer> result = pipeline.executeBatch(elements);
+        assertEquals(2, result.size());
+        assertTrue(result.contains(42));
+    }
+
+    @Test
     public void filteringTest() {
         Pipeline<String, String> simplePipeline = Pipes.filtering((str) -> str.equals("test"));
         assertTrue(simplePipeline.execute("test").isPresent());
@@ -106,6 +182,15 @@ public class PipelineTest {
         assertEquals("test1;test2", concatPipeline.execute("test1").get());
         assertArrayEquals(expectedSplitValues, splitPipeline.execute("test1;test2").get());
         assertArrayEquals(expectedSplitValues, concatPipeline.connect(splitPipeline).execute("test1").get());
+    }
+
+    private Pipeline<String, Integer> createPipeline() {
+        return new Pipeline<String, Integer>() {
+            @Override
+            public Optional<Integer> execute(String input) {
+                return Optional.of(42);
+            }
+        };
     }
 
 }

@@ -5,9 +5,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
 
+import tcpassos.pipeline.ParallelPipeline;
 import tcpassos.pipeline.Pipeline;
 
-public class ParallelPipelineImpl <BEGIN, MIDDLE, END> implements Pipeline.Parallel<BEGIN, END> {
+public class ParallelPipelineImpl <BEGIN, MIDDLE, END> implements ParallelPipeline<BEGIN, END> {
 
     private final Pipeline<BEGIN, MIDDLE> original;
     private final Collection<Pipeline<MIDDLE, END>> branches;

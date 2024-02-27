@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class AtomicPipeline<BEGIN, END> implements Pipeline<BEGIN, END> {
 
     /* Reference to the pipeline that will be executed. */
-    private final AtomicReference<OptionalPipeline<? super BEGIN, END>> pipelineReference;
+    private final AtomicReference<Pipeline<? super BEGIN, END>> pipelineReference;
 
     /**
      * Creates a new atomic pipeline with an empty pipeline.
@@ -26,7 +26,7 @@ public class AtomicPipeline<BEGIN, END> implements Pipeline<BEGIN, END> {
      *
      * @param pipeline The pipeline to be executed.
      */
-    public AtomicPipeline(OptionalPipeline<? super BEGIN, END> pipeline) {
+    public AtomicPipeline(Pipeline<? super BEGIN, END> pipeline) {
         this.pipelineReference = new AtomicReference<>(pipeline);
     }
 
@@ -35,7 +35,7 @@ public class AtomicPipeline<BEGIN, END> implements Pipeline<BEGIN, END> {
      *
      * @param newPipeline The new pipeline to be executed.
      */
-    public void set(OptionalPipeline<BEGIN, END> newPipeline) {
+    public void set(Pipeline<BEGIN, END> newPipeline) {
         pipelineReference.set(newPipeline);
     }
 

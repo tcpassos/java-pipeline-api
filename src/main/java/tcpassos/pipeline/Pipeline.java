@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import tcpassos.pipeline.classes.BranchedPipelineImpl;
 import tcpassos.pipeline.classes.PipelineBuilderImpl;
@@ -22,7 +23,7 @@ import tcpassos.pipeline.classes.PipelineBuilderImpl;
  * {@code Optional.empty()} if the pipeline is interrupted before reaching the end.
  * </p>
  */
-public interface Pipeline <BEGIN, END> extends OptionalPipeline <BEGIN,END> {
+public interface Pipeline <BEGIN, END> extends BasePipeline <BEGIN, Optional<END>> {
 
     /**
      * Returns a builder to create a pipeline from scratch
@@ -66,6 +67,69 @@ public interface Pipeline <BEGIN, END> extends OptionalPipeline <BEGIN,END> {
     }
 
     /**
+     * Returns a supplier representation of the pipeline
+     *
+     * @return {@code Supplier<Optional<END>>}
+     */
+    default Supplier<Optional<END>> asSupplier() {
+        return this::execute;
+    }
+
+    /**
+     * Returns a supplier representation of the pipeline that returns null if the output element is empty
+     *
+     * @return {@code Supplier<END>}
+     */
+    default Supplier<END> asNullableSupplier() {
+        return () -> execute().orElse(null);
+    }
+
+    /**
+     * Returns a consumer representation of the pipeline
+     *
+     * @return {@code Consumer<BEGIN>}
+     */
+    default Consumer<BEGIN> asConsumer() {
+        return this::execute;
+    }
+
+    /**
+     * Returns a runnable representation of the pipeline
+     *
+     * @return {@code Runnable}
+     */
+    default Runnable asRunnable() {
+        return () -> execute();
+    }
+
+    /**
+     * Returns a predicate representation of the pipeline
+     *
+     * @return {@code Predicate<BEGIN>}
+     */
+    default Predicate<BEGIN> asPredicate() {
+        return (obj) -> execute(obj).isPresent();
+    }
+
+    /**
+     * Returns a function representation of the pipeline
+     *
+     * @return {@code Function<BEGIN, Optional<END>>}
+     */
+    default Function<BEGIN, Optional<END>> asFunction() {
+        return this::execute;
+    }
+
+    /**
+     * Returns a function representation of the pipeline that returns null if the output element is empty
+     *
+     * @return {@code Function<BEGIN, END>}
+     */
+    default Function<BEGIN, END> asNullableFunction() {
+        return (obj) -> execute(obj).orElse(null);
+    }
+
+    /**
      * Connect this pipeline at the beginning of another pipeline
      *
      * @param <NEW_END> New pipeline output element type
@@ -90,7 +154,7 @@ public interface Pipeline <BEGIN, END> extends OptionalPipeline <BEGIN,END> {
      * @param <NEW_END> the type of the new end of the branched pipeline
      * @return a branched pipeline representing the connection between the current pipeline and the next pipelines
      */
-    default <NEW_END> Branched<BEGIN, NEW_END> connect(Collection<Pipeline<END, NEW_END>> next) {
+    default <NEW_END> BranchedPipeline<BEGIN, NEW_END> connect(Collection<Pipeline<END, NEW_END>> next) {
         return new BranchedPipelineImpl<BEGIN, END, NEW_END>(this, next);
     }
 
@@ -109,24 +173,17 @@ public interface Pipeline <BEGIN, END> extends OptionalPipeline <BEGIN,END> {
     }
 
     /**
-     * Represents a branched pipeline in the Java Pipeline API.
-     * A branched pipeline takes an input of type BEGIN and produces a list of outputs of type END.
-     * It extends the MergablePipeline interface and provides additional functionality for merging the branches.
+     * Executes the pipeline with multiple input elements
      *
-     * @param <BEGIN> the type of the input to the pipeline
-     * @param <END> the type of the output from the pipeline
+     * @param elements Input elements
+     * @return {@code List<END>}
      */
-    public interface Branched <BEGIN, END> extends MergeablePipeline<BEGIN, List<END>, Pipeline<BEGIN, END>, END> { }
-
-    /**
-     * Represents a parallel pipeline in the Java Pipeline API.
-     * A parallel pipeline is a type of pipeline that takes a collection of input elements of type BEGIN,
-     * processes them in parallel, and produces a collection of output elements of type END.
-     *
-     * @param <BEGIN> the type of the input elements
-     * @param <END> the type of the output elements
-     */
-    public interface Parallel <BEGIN, END> extends MergeablePipeline<BEGIN, List<END>, Pipeline<BEGIN, END>, END> { }
+    default List<END> executeBatch(Collection<BEGIN> elements) {
+        return elements.stream()
+                       .map(this::execute)
+                       .flatMap(Optional::stream)
+                       .collect(Collectors.toList());
+    }
 
     /**
      * Builder with methods to add stages to the pipeline
@@ -218,7 +275,7 @@ public interface Pipeline <BEGIN, END> extends OptionalPipeline <BEGIN,END> {
          * @param nextPipe Pipeline to be connected at the end of this pipeline
          * @return {@code Builder<BEGIN, NEW_END>}
          */
-        <NEW_END> Builder <BEGIN, NEW_END> pipe(OptionalPipeline<? super END, NEW_END> nextPipe);
+        <NEW_END> Builder <BEGIN, NEW_END> pipe(Pipeline<? super END, NEW_END> nextPipe);
 
         /**
          * Adds a stage to process the output element of the pipeline

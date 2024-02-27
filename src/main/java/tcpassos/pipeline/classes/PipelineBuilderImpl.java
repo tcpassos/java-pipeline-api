@@ -6,7 +6,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import tcpassos.pipeline.OptionalPipeline;
 import tcpassos.pipeline.Pipeline;
 import tcpassos.pipeline.Pipes;
 
@@ -64,7 +63,7 @@ public class PipelineBuilderImpl <BEGIN, END> implements Pipeline.Builder<BEGIN,
     }
 
     @Override
-    public <NEW_END> Pipeline.Builder<BEGIN, NEW_END> pipe(OptionalPipeline<? super END, NEW_END> nextPipe) {
+    public <NEW_END> Pipeline.Builder<BEGIN, NEW_END> pipe(Pipeline<? super END, NEW_END> nextPipe) {
         return new PipelineBuilderImpl<>(pipeline.connect(nextPipe));
     }
 

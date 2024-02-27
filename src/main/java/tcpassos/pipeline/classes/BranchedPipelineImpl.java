@@ -4,9 +4,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.BinaryOperator;
 
+import tcpassos.pipeline.BranchedPipeline;
 import tcpassos.pipeline.Pipeline;
 
-public class BranchedPipelineImpl <BEGIN, MIDDLE, END> implements Pipeline.Branched<BEGIN, END> {
+public class BranchedPipelineImpl <BEGIN, MIDDLE, END> implements BranchedPipeline<BEGIN, END> {
         
     private final Pipeline<BEGIN, MIDDLE> original;
     private final Collection<Pipeline<MIDDLE, END>> branches;
