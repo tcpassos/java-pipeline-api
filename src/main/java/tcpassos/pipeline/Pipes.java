@@ -83,10 +83,10 @@ public class Pipes {
      * If the filter test passes, the mapping function is applied and the result is wrapped in an Optional.
      * If the filter test fails, an empty Optional is returned.
      *
-     * @param filter the predicate used to filter the input object
-     * @param ifTrue the function used to map the filtered input object to the desired result
      * @param <T> the type of the input object
      * @param <R> the type of the result
+     * @param filter the predicate used to filter the input object
+     * @param ifTrue the function used to map the filtered input object to the desired result
      * @return a pipeline that applies the filter and mapping function to the input object
      */
     public static <T, R> Pipeline<T, R> filterMapping(Predicate<T> filter, Function<? super T, R> ifTrue) {
@@ -96,15 +96,45 @@ public class Pipes {
     /**
      * Returns a pipeline that applies a filter to the input object and maps it to a result based on the filter's evaluation.
      *
+     * @param <T>     the type of the input object
+     * @param <R>     the type of the result
      * @param filter  the predicate used to filter the input object
      * @param ifTrue  the function to apply to the input object if the filter evaluates to true
      * @param ifFalse the function to apply to the input object if the filter evaluates to false
-     * @param <T>     the type of the input object
-     * @param <R>     the type of the result
      * @return a pipeline that applies the filter and mapping functions to the input object
      */
     public static <T, R> Pipeline<T, R> filterMapping(Predicate<T> filter, Function<? super T, R> ifTrue, Function<? super T, R> ifFalse) {
         return (obj) -> filter.test(obj) ? Optional.ofNullable(ifTrue.apply(obj)) : Optional.ofNullable(ifFalse.apply(obj));
+    }
+
+    /**
+     * Returns a pipeline that filters the input objects based on the given predicate.
+     * If the predicate evaluates to true, the input object is passed to the provided consumer.
+     * 
+     * @param <T> the type of the input and output objects
+     * @param filter the predicate used to filter the input objects
+     * @param ifTrue the consumer to be executed if the predicate evaluates to true
+     * @return a pipeline that filters the input objects and executes the consumer if the predicate is true
+     */
+    public static <T> Pipeline<T, T> filterProcessing(Predicate<T> filter, Consumer<T> ifTrue) {
+        return (obj) -> filter.test(obj) ?
+            Optional.of(obj).map(t -> { ifTrue.accept(t); return t; }) :
+            Optional.empty();
+    }
+
+    /**
+     * Applies a filter to the input object and performs different actions based on the filter result.
+     *
+     * @param <T> the type of the input object
+     * @param filter the predicate used to filter the input object
+     * @param ifTrue the consumer to be executed if the filter returns true
+     * @param ifFalse the consumer to be executed if the filter returns false
+     * @return a pipeline function that applies the filter and performs the corresponding actions
+     */
+    public static <T> Pipeline<T, T> filterProcessing(Predicate<T> filter, Consumer<T> ifTrue, Consumer<T> ifFalse) {
+        return (obj) -> filter.test(obj) ?
+            Optional.of(obj).map(t -> { ifTrue.accept(t); return t; }) :
+            Optional.of(obj).map(t -> { ifFalse.accept(t); return t; });
     }
 
     /**
