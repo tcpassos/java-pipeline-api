@@ -6,6 +6,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import tcpassos.pipeline.Pipeline;
+import tcpassos.pipeline.Pipeline.Builder;
 import tcpassos.pipeline.Pipes;
 
 public class PipelineBuilderImpl <BEGIN, END> implements Pipeline.Builder<BEGIN, END> {
@@ -30,12 +31,12 @@ public class PipelineBuilderImpl <BEGIN, END> implements Pipeline.Builder<BEGIN,
     public Pipeline.Builder<BEGIN, END> filter(Predicate<END> filter) {
         return new PipelineBuilderImpl<>(pipeline.connect(Pipes.filtering(filter)));
     }
-    
+
     @Override
     public <NEW_END> Pipeline.Builder<BEGIN, NEW_END> filterMap(Predicate<END> filter, Function<END, NEW_END> ifTrue) {
         return new PipelineBuilderImpl<>(pipeline.connect(Pipes.filterMapping(filter, ifTrue)));
     }
-
+    
     @Override
     public <NEW_END> Pipeline.Builder<BEGIN, NEW_END> filterMap(Predicate<END> filter, Function<END, NEW_END> ifTrue, Function<END, NEW_END> ifFalse) {
         return new PipelineBuilderImpl<>(pipeline.connect(Pipes.filterMapping(filter, ifTrue, ifFalse)));
@@ -49,6 +50,11 @@ public class PipelineBuilderImpl <BEGIN, END> implements Pipeline.Builder<BEGIN,
     @Override
     public Pipeline.Builder<BEGIN, END> filterProcess(Predicate<END> filter, Consumer<END> ifTrue, Consumer<END> ifFalse) {
         return new PipelineBuilderImpl<>(pipeline.connect(Pipes.filterProcessing(filter, ifTrue, ifFalse)));
+    }
+
+    @Override
+    public <NEW_END> tcpassos.pipeline.BranchedPipeline.Builder<BEGIN, NEW_END> fork(Function<Builder<BEGIN, END>, Builder<BEGIN, NEW_END>> forkBuilderFunction) {
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     @Override

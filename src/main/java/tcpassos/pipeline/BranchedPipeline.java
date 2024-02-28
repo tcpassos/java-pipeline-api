@@ -10,4 +10,10 @@ import java.util.List;
  * @param <BEGIN> the type of the input to the pipeline
  * @param <END> the type of the output from the pipeline
  */
-public interface BranchedPipeline <BEGIN, END> extends MergeablePipeline<BEGIN, List<END>, Pipeline<BEGIN, END>, END> { }
+public interface BranchedPipeline <BEGIN, END> extends MergeablePipeline<BEGIN, List<END>, Pipeline<BEGIN, END>, END> {
+
+    public interface Builder <BEGIN, END> extends BasePipeline.Builder<BEGIN, List<END>> {
+        
+    }
+
+}

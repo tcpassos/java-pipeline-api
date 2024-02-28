@@ -18,6 +18,14 @@ public class BranchedPipelineImpl <BEGIN, MIDDLE, END> implements BranchedPipeli
     }
 
     @Override
+    public <NEW_P_END> BranchedPipeline<BEGIN, NEW_P_END> connect(Pipeline<? super END, NEW_P_END> next) {
+        var nextBranches = branches.stream()
+                                  .map(p -> p.connect(next))
+                                  .toList();
+        return new BranchedPipelineImpl<>(original, nextBranches);
+    }
+
+    @Override
     public Pipeline<BEGIN, END> merge(BinaryOperator<END> joiner) {
         return (obj) -> {
             var result = original.execute(obj);

@@ -10,7 +10,16 @@ import java.util.function.BinaryOperator;
  * @param <BEGIN> the type of the beginning result
  * @param <END> the type of the end result
  */
-public interface MergeablePipeline<BEGIN, END, P extends BasePipeline<BEGIN, ?>, P_END> extends BasePipeline<BEGIN, END> {
+public interface MergeablePipeline <BEGIN, END, P extends BasePipeline<BEGIN, ?>, P_END> extends BasePipeline<BEGIN, END> {
+
+    /**
+     * Connects the current pipeline with the specified next pipeline.
+     *
+     * @param next The next pipeline to connect.
+     * @param <NEW_P_END> The type of the end result of the next pipeline.
+     * @return A new pipeline with the specified next pipeline connected.
+     */
+    <NEW_P_END> MergeablePipeline<BEGIN, ?, ?, NEW_P_END> connect(Pipeline<? super P_END, NEW_P_END> next);
 
     /**
      * Joins multiple branch pipelines into a single pipeline using the specified joiner function.
