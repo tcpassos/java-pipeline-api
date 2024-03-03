@@ -1,10 +1,12 @@
 package tcpassos.pipeline.classes;
 
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import tcpassos.pipeline.BranchedPipeline;
 import tcpassos.pipeline.Pipeline;
 import tcpassos.pipeline.Pipeline.Builder;
 import tcpassos.pipeline.Pipes;
@@ -53,8 +55,12 @@ public class PipelineBuilderImpl <BEGIN, END> implements Pipeline.Builder<BEGIN,
     }
 
     @Override
-    public <NEW_END> tcpassos.pipeline.BranchedPipeline.Builder<BEGIN, NEW_END> fork(Function<Builder<BEGIN, END>, Builder<BEGIN, NEW_END>> forkBuilderFunction) {
-        throw new UnsupportedOperationException("Not implemented yet");
+    public BranchedPipeline.Builder<BEGIN, END> fork(Function<Builder<END, END>, Builder<END, END>> forkBuilderFunction) {
+        Pipeline.Builder<END, END> forkedPipelineBuilder = forkBuilderFunction.apply(Pipeline.<END>builder());
+        Pipeline<END, END> forkedPipeline = forkedPipelineBuilder.build();
+        List<Pipeline<END, END>> branches = List.of(Pipeline.empty(), forkedPipeline);
+        BranchedPipeline<BEGIN, END> branchedPipeline = new BranchedPipelineImpl<>(pipeline, branches);
+        return new BranchedPipelineBuilderImpl<>(branchedPipeline);
     }
 
     @Override

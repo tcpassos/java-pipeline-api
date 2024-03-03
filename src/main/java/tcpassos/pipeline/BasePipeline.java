@@ -3,7 +3,6 @@ package tcpassos.pipeline;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 /**
  * Base of a pipeline, which supports the processing of an input element, returning an output element.
@@ -40,22 +39,6 @@ public interface BasePipeline <BEGIN, END> {
      * @param <END> the type of the output elements in the pipeline
      */
     public interface Builder <BEGIN, END> {
-
-        /**
-         * Adds a stage to give an input element to the pipeline
-         *
-         * @param value Output element
-         * @return {@code Builder<BEGIN, END>}
-         */
-        Builder <BEGIN, END> give(END value);
-
-        /**
-         * Adds a stage to give an input element to the pipeline
-         *
-         * @param supplier Supplier of the output element
-         * @return {@code Builder<BEGIN, END>}
-         */
-        Builder <BEGIN, END> give(Supplier<END> supplier);
 
         /**
         * Adds a stage to filter the output element of the pipeline

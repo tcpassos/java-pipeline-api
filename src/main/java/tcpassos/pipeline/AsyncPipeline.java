@@ -38,7 +38,7 @@ public interface AsyncPipeline <BEGIN, END> extends BasePipeline<BEGIN, Completa
      * @param <NEW_END> the new end type of the pipeline
      * @return a new asynchronous pipeline that represents the connection between the current pipeline and the next pipeline
      */
-    default <NEW_END> AsyncPipeline <BEGIN, NEW_END> connect(BasePipeline<END, Optional<NEW_END>> next) {
+    default <NEW_END> AsyncPipeline <BEGIN, NEW_END> connect(Pipeline<? super END, NEW_END> next) {
         return (input) -> this.execute(input)
                               .thenCompose(result -> next.execute(result)
                                                           .map(CompletableFuture::completedFuture)

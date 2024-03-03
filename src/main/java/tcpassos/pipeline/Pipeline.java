@@ -194,13 +194,35 @@ public interface Pipeline <BEGIN, END> extends BasePipeline <BEGIN, Optional<END
     public interface Builder <BEGIN, END> extends BasePipeline.Builder<BEGIN, END> {
 
         /**
+         * Adds a stage to give an input element to the pipeline
+         *
+         * @param value Output element
+         * @return {@code Builder<BEGIN, END>}
+         */
+        Builder <BEGIN, END> give(END value);
+
+        /**
+         * Adds a stage to give an input element to the pipeline
+         *
+         * @param supplier Supplier of the output element
+         * @return {@code Builder<BEGIN, END>}
+         */
+        Builder <BEGIN, END> give(Supplier<END> supplier);
+
+        /**
          * Forks the pipeline into a new branch, allowing for parallel processing of the pipeline.
          *
-         * @param <NEW_END> the type of the end result of the new branch
          * @param forkBuilderFunction the function that defines the branching logic for the new branch
          * @return a new builder representing the forked branch of the pipeline
          */
-        <NEW_END> BranchedPipeline.Builder <BEGIN, NEW_END> fork(Function<Builder<BEGIN, END>, Builder<BEGIN, NEW_END>> forkBuilderFunction);
+        BranchedPipeline.Builder <BEGIN, END> fork(Function<Builder<END, END>, Builder<END, END>> forkBuilderFunction);
+
+        /**
+         * Builds the pipeline and returns an instance of the pipeline.
+         *
+         * @return an instance of the pipeline.
+         */
+        Pipeline<BEGIN, END> build();
 
     }
 

@@ -7,6 +7,7 @@ import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
 import tcpassos.pipeline.AsyncPipeline;
+import tcpassos.pipeline.Pipeline;
 
 /**
  * Represents an implementation of the {@link AsyncPipeline.Branched} interface.
@@ -22,23 +23,19 @@ public class BranchedAsyncPipelineImpl<BEGIN, MIDDLE, END> implements AsyncPipel
     private final AsyncPipeline<BEGIN, MIDDLE> original;
     private final Collection<AsyncPipeline<MIDDLE, END>> branches;
 
-    /**
-     * Constructs a new instance of the {@code BranchedAsyncPipelineImpl} class.
-     *
-     * @param original the original pipeline to be executed
-     * @param branches the collection of branches to be executed
-     */
     public BranchedAsyncPipelineImpl(AsyncPipeline<BEGIN, MIDDLE> original, Collection<AsyncPipeline<MIDDLE, END>> branches) {
         this.original = original;
         this.branches = branches;
     }
 
-    /**
-     * Merges the original pipeline with the branches using the specified joiner.
-     *
-     * @param joiner the binary operator used to merge the results of the original pipeline and the branches
-     * @return a new asynchronous pipeline that merges the original pipeline and the branches
-     */
+    @Override
+    public <NEW_P_END> AsyncPipeline.Branched<BEGIN, NEW_P_END> connect(Pipeline<? super END, NEW_P_END> next) {
+        var nextBranches = branches.stream()
+                                .map(p -> p.connect(next))
+                                .toList();
+        return new BranchedAsyncPipelineImpl<>(original, nextBranches);
+    }
+
     @Override
     public AsyncPipeline<BEGIN, END> merge(BinaryOperator<END> joiner) {
         return (obj) -> {
@@ -55,13 +52,6 @@ public class BranchedAsyncPipelineImpl<BEGIN, MIDDLE, END> implements AsyncPipel
         };
     }
 
-    /**
-     * Executes the original pipeline and the branches, and returns a CompletableFuture
-     * that completes with a list of the merged results.
-     *
-     * @param obj the input to the original pipeline
-     * @return a CompletableFuture that completes with a list of the merged results
-     */
     @Override
     public CompletableFuture<List<END>> execute(BEGIN obj) {
         return original.execute(obj).thenCompose(res -> {

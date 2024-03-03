@@ -19,6 +19,14 @@ public class ParallelPipelineImpl <BEGIN, MIDDLE, END> implements ParallelPipeli
     }
 
     @Override
+    public <NEW_P_END> ParallelPipeline<BEGIN, NEW_P_END> connect(Pipeline<? super END, NEW_P_END> next) {
+        var nextBranches = branches.stream()
+                                  .map(p -> p.connect(next))
+                                  .toList();
+        return new ParallelPipelineImpl<>(original, nextBranches);
+    }
+
+    @Override
     public Pipeline<BEGIN, END> merge(BinaryOperator<END> joiner) {
         return (obj) -> {
             var result = original.execute(obj);
