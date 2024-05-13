@@ -23,6 +23,12 @@ public interface BranchedPipeline <BEGIN, END> extends MergeablePipeline<BEGIN, 
     @Override
     public <NEW_END> BranchedPipeline<BEGIN, NEW_END> connect(Pipeline<? super END, NEW_END> next);
 
+    /**
+     * Builder interface for creating a branched pipeline.
+     * 
+     * @param <BEGIN> the type of the input to the pipeline
+     * @param <END> the type of the output from the pipeline
+     */
     public interface Builder <BEGIN, END> extends BasePipeline.Builder<BEGIN, END> {
 
         /**
